@@ -103,7 +103,6 @@ public class ConnectionService extends Service {
             byte[] buffer = new byte[bufferSize];
             BluetoothSocket bSock = mBtSockets.get(address);
             try {
-            	Log.d(TAG, "xyzzy reading from bSock " + address);
                 InputStream instream = bSock.getInputStream();
                 int bytesRead = -1;
                 String message = "";
@@ -131,7 +130,6 @@ public class ConnectionService extends Service {
             }
             // Getting out of the while loop means the connection is dead.
             try {
-            	Log.d(TAG, "xyzzy ended reading from bSock " + address);
                 BluetoothSocket myBsock = mBtSockets.get(address);
                 myBsock.close();
                 mBtDeviceAddresses.remove(address);
@@ -172,9 +170,7 @@ public class ConnectionService extends Service {
                     // connection has been made.
 
                     String address = myBSock.getRemoteDevice().getAddress();
-                    Log.d(TAG, "xyzzy14 size is " + mBtSockets.size() + " address " + address);
                     mBtSockets.put(address, myBSock);
-                    Log.d(TAG, "xyzzy14 size is " + mBtSockets.size() + " address " + address);
                     mBtDeviceAddresses.add(address);
                     Thread mBtStreamWatcherThread = new Thread(new BtStreamWatcher(address));
                     mBtStreamWatcherThread.start();

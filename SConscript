@@ -19,4 +19,4 @@ sources = [
 ]
 
 Import('env')
-env.BuildLibrary(sources, header_paths=header_paths, static=True, flags=flags, defines=defines, deps=deps)
+env.BuildLibrary('bluetooth', sources, header_paths=header_paths, static=True, flags=flags, defines=defines, deps=deps)

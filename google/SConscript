@@ -1,0 +1,27 @@
+sources = [
+    'src/com/apportable/bluetooth/Connection.java',
+    'src/com/apportable/bluetooth/ConnectionService.java',    
+    'src/com/apportable/bluetooth/ConnectionClientService.java',    
+    'src/com/apportable/bluetooth/ConnectionServerService.java',
+    'src/com/apportable/bluetooth/StartDiscoverableModeActivity.java',
+    'src/com/apportable/bluetooth/BluetoothConnectionManager.java',
+]
+
+aidl_sources = [
+    'src/com/apportable/bluetooth/IConnection.aidl',
+    'src/com/apportable/bluetooth/IConnectionCallback.aidl',
+]
+
+deps = [
+]
+
+libs = [
+
+]
+
+paths = [
+    'src',
+]
+
+Import('env')
+env.BuildJava(sources, paths, deps, libs=libs, output=True, aidl_sources=aidl_sources)

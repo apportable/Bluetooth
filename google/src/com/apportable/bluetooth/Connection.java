@@ -286,10 +286,8 @@ public class Connection {
     }
     
     public void shutdown() {
-    	Log.d(TAG, "in Connection.java shutdown " + mPackageName);
     	mShutdown = true;
         if (!mStarted) {
-        	Log.d(TAG, "in Connection.java shutdown extra call " + mPackageName);
             return;
         }
         try {

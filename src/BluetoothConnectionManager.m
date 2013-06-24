@@ -116,12 +116,10 @@
 
 + (BOOL) isAvailable {
     BOOL avail = [BluetoothConnectionManager _isAvailable];
-    DEBUG_LOG("bluetooth_available is %d", avail);
     return avail;
 }
 
 - (id)initWithName:(NSString *)name isClient:(BOOL)isC delegate:(id)dgt {
-    DEBUG_LOG("starting objc init_bluetooth");
     if (![BluetoothConnectionManager isAvailable]) {
         return nil;
     }
@@ -131,7 +129,6 @@
         delegate = dgt;
         isClient = isC;
     }
-    NSLog(@"%p", self);
     return self;
 }
 
@@ -147,33 +144,17 @@
 }
 
 - (void)startSearching {
-            DEBUG_LOG("calling startSearching before bridge");
     [self _startSearching];
 }
 
 - (void)disconnect {
-    NSLog(@"objc disconnect");
     [self _disconnect];
 }
 
 - (void)shutdown {
-    NSLog(@"objc shutdown");
     [self.socketMap release];
     self.socketMap = nil;
-
-//     if (self.isClient)
-//     {
-//         isClientConnected = NO;
-//     }
-//     else
-//     {
-//         isServerConnected = NO;
-//     }
-// //  only shutdown if both server and client are done
-//     if (isServerConnected == NO && isClientConnected == NO)
-    {
-        [self _shutdown];
-    }  
+    [self _shutdown];
 }
 
 - (bool)isConnectedToServer {
@@ -192,8 +173,6 @@
 {
     NSString *clientDevice = [NSString stringWithJavaString:(jstring)msg->_object];
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"in connectionReceived %@", clientDevice);
-        DEBUG_LOG("class is %s", class_getName(object_getClass(clientDevice)));
         if (self.socketMap == nil) // create dictionary on first connection
         {
             self.socketMap = [[NSMutableDictionary alloc] init]; 
@@ -231,8 +210,6 @@
     NSString *serverDevice = [NSString stringWithJavaString:(jstring)msg->_object];
 
     dispatch_async(dispatch_get_main_queue(), ^{
-//        isClientConnected = YES;
-        NSLog(@"in didConnectToServer %@", serverDevice);
         self.socketMap = [[NSMutableDictionary alloc] init];
         if ([self.delegate respondsToSelector:@selector(didConnectToServer:)])
         {
@@ -259,7 +236,7 @@
         }
 
         range = NSMakeRange(0, length);
-        DEBUG_LOG("substringing %d to %d expecting tag %lx found tag %lx", [socket.receivedBuffer length], length, requestedTag, readTag);
+//        DEBUG_LOG("substringing %d to %d expecting tag %lx found tag %lx", [socket.receivedBuffer length], length, requestedTag, readTag);
         readBuffer = [socket.receivedBuffer subdataWithRange:range];
         [socket.receivedBuffer replaceBytesInRange:range withBytes:NULL length:0];
     }
@@ -277,16 +254,12 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         BluetoothSocket *socket = [self.socketMap valueForKey:device];
         NSMutableData *rawData = [[GSMimeDocument decodeBase64FromString:message multipleChunks:YES] mutableCopy];
-        NSLog(@"in didReceive length %d %@ from device %@", [rawData length], rawData, device);
         @synchronized(socket) {
             [socket.receivedBuffer appendData:rawData];
-                    NSLog(@"in receeivedBuffer length before loop %d", [socket.receivedBuffer length]);
             while (![socket.readQueue isEmpty] && [socket.readQueue nextLength] <= [socket.receivedBuffer length]) {
-                DEBUG_LOG("deferred returnRead call %d from %d", [socket.readQueue nextLength], [socket.receivedBuffer length]);
                 long nextTag = [socket.readQueue nextTag];
                 [self returnRead:([socket.readQueue dequeue]) fromSocket:socket tag:nextTag];
             }
-            NSLog(@"in receeivedBuffer length after loop %d", [socket.receivedBuffer length]);
         }
     });
 }
@@ -300,7 +273,6 @@
     self.socketMap = nil;
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"in didDisconnect %@", device);
         if ([self.delegate respondsToSelector: @selector(socketDidDisconnect:)])
         {
             [self.delegate socketDidDisconnect:socket];
@@ -321,13 +293,10 @@
     });
 }
 
-
-
 +(NSString *) className 
 {
     return @"com.apportable.bluetooth.BluetoothConnectionManager";
 }
-
 
 @end
 

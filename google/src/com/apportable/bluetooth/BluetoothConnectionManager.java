@@ -70,7 +70,6 @@ public class BluetoothConnectionManager {
 
     private OnMessageReceivedListener dataReceivedListener = new OnMessageReceivedListener() {
         public void OnMessageReceived(String device, String message) {
-        	Log.d(TAG, "Got message :" + message + "-from-" + device);
         	didReceive(message, device);
         }
     };
@@ -91,21 +90,17 @@ public class BluetoothConnectionManager {
 
     private OnConnectionLostListener disconnectedListener = new OnConnectionLostListener() {
         public void OnConnectionLost(String device) {
-        	Log.d(TAG, "Disconnected from device :" + device);
         	didDisconnect(device);
         }
     };
     
     private OnSocketIOExceptionListener socketIOExceptionListener = new OnSocketIOExceptionListener() {
         public void OnSocketIOException() {
-        	Log.d(TAG, "Popup to restart bluetooth");
         	resetBluetoothNeeded();
         }
     };
     
     private void sendDeviceMessage(String device, String message) {
-    	Log.d(TAG, "message length is " + message.length());
-    	Log.d(TAG, "write -" + message + "-to " + device);
         mConnection.sendMessage(device, message);
     }
     
@@ -211,7 +206,6 @@ public class BluetoothConnectionManager {
 	}
 
     private void shutdown() {
-    	Log.d(TAG, "shutdown!!!" + (mConnectedToServer ? " client" : " server"));
     	mConnectedToServer = false;
         if (mConnection != null) {
             mConnection.shutdown();

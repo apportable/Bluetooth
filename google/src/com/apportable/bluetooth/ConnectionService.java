@@ -68,7 +68,6 @@ public class ConnectionService extends Service {
     private volatile boolean isListening = false;
 
     public ConnectionService() {
-    	Log.d(TAG, "creating ConnectionService");
         mSelf = this;
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         mApp = "";
@@ -122,9 +121,7 @@ public class ConnectionService extends Service {
                     }
                 }
             } catch (IOException e) {
-                Log.i(TAG,
-                        "IOException in BtStreamWatcher - probably caused by normal disconnection",
-                        e);
+                Log.i(TAG, "IOException in BtStreamWatcher - probably caused by normal disconnection", e);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException in BtStreamWatcher while reading data", e);
             }
@@ -158,7 +155,6 @@ public class ConnectionService extends Service {
 
         public void run() {
             try {
-            	Log.d(TAG, "starting ConnectionWaiter");
                 for (int i = 0; i < Connection.MAX_SUPPORTED && maxConnections > 0; i++) {
                 	if (!isListening) return;
                     BluetoothServerSocket myServerSocket = mBtAdapter
@@ -176,7 +172,6 @@ public class ConnectionService extends Service {
                     mBtStreamWatcherThread.start();
                     mBtStreamWatcherThreads.put(address, mBtStreamWatcherThread);
                     maxConnections = maxConnections - 1;
-                    Log.d(TAG, "connected to client " + address + " maxConnections left is " + maxConnections);
                     if (mCallback != null) {
                         mCallback.incomingConnection(address);
                     }
@@ -224,7 +219,6 @@ public class ConnectionService extends Service {
             }
             mApp = srcApp;
             isListening = true;
-            Log.d(TAG, "Starting thread");
             mThread = (new Thread(new ConnectionWaiter(srcApp, maxConnections)));
             mThread.start();
             Intent i = new Intent();
@@ -235,7 +229,6 @@ public class ConnectionService extends Service {
         }
         
         public void stopServer() {
-        	Log.d(TAG, "in sstopServer");
         	isListening = false;
         }
 
@@ -307,13 +300,12 @@ public class ConnectionService extends Service {
             if (!mApp.equals(srcApp)) {
                 return Connection.FAILURE;
             }
-            Log.d(TAG, "registered callback for " + srcApp);
             mCallback = cb;
             return Connection.SUCCESS;
         }
 
         public int sendMessage(String srcApp, String destination, String message) throws RemoteException {
-        	Log.d(TAG, "in write " + srcApp + "--" + mApp + "--" + destination + "--" + message);
+//        	Log.d(TAG, "in write " + srcApp + "--" + mApp + "--" + destination + "--" + message);
             if (!mApp.equals(srcApp)) {
                 return Connection.FAILURE;
             }
@@ -325,12 +317,6 @@ public class ConnectionService extends Service {
                     stringAsBytes[stringAsBytes.length - 1] = 0; // Add a stop
                     // marker
                     outStream.write(stringAsBytes);
-                	Log.d(TAG, "after write");
-//                    try {
-//						Thread.sleep(50);   // Give write time to get through
-//					} catch (InterruptedException e) {
-//						Thread.currentThread().interrupt();
-//					}
                     return Connection.SUCCESS;
                 }
             } catch (IOException e) {
@@ -341,12 +327,9 @@ public class ConnectionService extends Service {
         }
 
         public void shutdown(String srcApp) throws RemoteException {
-        	Log.d(TAG, "In ConnectionService.java shutdown");
-        	Log.d(TAG, "mBtDeviceAddresses.size()  is " + mBtDeviceAddresses.size());
             try {
                 for (int i = 0; i < mBtDeviceAddresses.size(); i++) {
                     BluetoothSocket myBsock = mBtSockets.get(mBtDeviceAddresses.get(i));
-                    Log.d(TAG, "closing " + mBtDeviceAddresses.get(i));
                     myBsock.close();
                 }
                 mBtSockets = new HashMap<String, BluetoothSocket>();
@@ -362,7 +345,6 @@ public class ConnectionService extends Service {
             if (!mApp.equals(srcApp)) {
                 return Connection.FAILURE;
             }
-            Log.d(TAG, "unregisterCallback setting mCallback to NULL");
             mCallback = null;
             return Connection.SUCCESS;
         }
@@ -375,5 +357,4 @@ public class ConnectionService extends Service {
             return mBtAdapter.getName();
         }
     };
-
 }

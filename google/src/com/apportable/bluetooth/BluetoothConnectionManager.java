@@ -35,6 +35,8 @@ import android.bluetooth.BluetoothDevice;
 
 public class BluetoothConnectionManager {
     public static final String TAG = "BluetoothConnectionManager";
+    
+    private BluetoothConnectionManager self;
 
     private int mType; // 0 = server, 1 = client
     
@@ -117,18 +119,21 @@ public class BluetoothConnectionManager {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 // Add the name and address to an array adapter to show in a ListView
                 String name = device.getName();
-                Log.d(TAG, "found " + device.getName() + "---" + device.getAddress() + " mName is " + mName + mConnection != null ? "not null" : "null");
+//                Log.d(TAG, "found " + name + "---" + device.getAddress() + " mName is " + mName);
                 if (name.endsWith(mName)) {
+                	mConnectedToServer = true;
                     myBt.cancelDiscovery(); // Cancel BT discovery explicitly so that connections can go through
-                    int connectionStatus = mConnection.connect(device.getAddress(), dataReceivedListener,
-                            disconnectedListener);
+                    int connectionStatus;
+                    synchronized(self) {
+	                    connectionStatus = mConnection.connect(device.getAddress(), dataReceivedListener, disconnectedListener);
+                    }
                     if (connectionStatus != Connection.SUCCESS) {
                         Log.d(TAG, "Unable to connect; please try again.");
+                    	mConnectedToServer = false;
                     } else {
-                    	mConnectedToServer = true;
+                    	// Successful client connection to server
                     	didConnectToServer(device.getAddress());
                     	mConnectedServer = device.getAddress();
-                        Log.d(TAG, "Connection success!");
                     }
                 }
             }
@@ -141,23 +146,21 @@ public class BluetoothConnectionManager {
             myBt.setName(name + "-" + mName);
             name = myBt.getName();
         }
-        Log.d(TAG, "name after is " + name);
-        mConnection.startServer(4, connectedListener, maxConnectionsListener,
-                dataReceivedListener, disconnectedListener, socketIOExceptionListener);   
+        synchronized(self) {
+	        mConnection.startServer(4, connectedListener, maxConnectionsListener,
+	                dataReceivedListener, disconnectedListener, socketIOExceptionListener);
+        }
     	didPublish();
     }
 
     private OnConnectionServiceReadyListener serviceReadyListener = new OnConnectionServiceReadyListener() {
         public void OnConnectionServiceReady() {
-        	Log.d(TAG, "connection ready for " + (mType == 0 ? "server" : "client"));
             myBt = BluetoothAdapter.getDefaultAdapter();
-            Log.d(TAG, "my bluetooth address is " + myBt.getAddress());
 
             if (mType == 0) {
             	doPublish();
             } else {
             	// Register the BroadcastReceiver
-            	Log.d(TAG, "connection ready for searching");
             	IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             	mContext.registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
             	mRegistered = true;
@@ -171,23 +174,29 @@ public class BluetoothConnectionManager {
     }
     
     public void startPublishing() {
-    	mConnection = new Connection(mContext, serviceReadyListener, false);
+    	Log.d(TAG, "start publishing");
+    	synchronized(this) {
+    		mConnection = new Connection(mContext, serviceReadyListener, false);
+    	}
     }
     
     public void stopPublishing() {
     	mConnection.stopServer();
     }
     
-    private void startSearching() {  
-    	mConnection = new Connection(mContext, serviceReadyListener, true);	
+    private void startSearching() { 
+	    synchronized(this) {
+	    	mConnection = new Connection(mContext, serviceReadyListener, true);	
+	    }
     }
     
     private boolean isConnectedToServer() {
+    	Log.d(TAG, "mConnectedToServer is " + (mConnectedToServer ? "true" : "false"));
     	return mConnectedToServer;
     }
     
     public BluetoothConnectionManager(Context ctx, String name, boolean type) {
-    	Log.d(TAG, "BluetoothConnectionManager crossed bridge " + type + " " + name);
+    	self = this;
     	mContext = ctx;
     	mName = name;
         mType = type ? 1 : 0;

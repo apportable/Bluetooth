@@ -192,10 +192,12 @@
 {
     NSString *clientDevice = [NSString stringWithJavaString:(jstring)msg->_object];
     dispatch_async(dispatch_get_main_queue(), ^{
-//        isServerConnected = YES;
         NSLog(@"in connectionReceived %@", clientDevice);
         DEBUG_LOG("class is %s", class_getName(object_getClass(clientDevice)));
-        self.socketMap = [[NSMutableDictionary alloc] init];
+        if (self.socketMap == nil) // create dictionary on first connection
+        {
+            self.socketMap = [[NSMutableDictionary alloc] init]; 
+        }
         if ([self.delegate respondsToSelector:@selector(connectionReceived:)])
         {
             [self.delegate connectionReceived:[[BluetoothSocket alloc] initWithName:clientDevice withConnection:self]];

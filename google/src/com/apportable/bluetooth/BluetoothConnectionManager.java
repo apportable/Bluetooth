@@ -121,7 +121,6 @@ public class BluetoothConnectionManager {
                 String name = device.getName();
 //                Log.d(TAG, "found " + name + "---" + device.getAddress() + " mName is " + mName);
                 if (name.endsWith(mName)) {
-                	mConnectedToServer = true;
                     myBt.cancelDiscovery(); // Cancel BT discovery explicitly so that connections can go through
                     int connectionStatus;
                     synchronized(self) {
@@ -129,9 +128,9 @@ public class BluetoothConnectionManager {
                     }
                     if (connectionStatus != Connection.SUCCESS) {
                         Log.d(TAG, "Unable to connect; please try again.");
-                    	mConnectedToServer = false;
                     } else {
                     	// Successful client connection to server
+                    	mConnectedToServer = true;
                     	didConnectToServer(device.getAddress());
                     	mConnectedServer = device.getAddress();
                     }

@@ -8,7 +8,7 @@
 - (id)initWithName:(NSString *)name withConnection:(BluetoothConnectionManager *)connection
 {
     if ((self = [super init]) ) {
-        _name = name;
+        _name = [name copy];
         _connection = connection;
         _readQueue = [[BluetoothReadQueue alloc] init];
         _receivedBuffer = [[NSMutableData alloc] init];
@@ -23,6 +23,7 @@
     [[_connection socketMap] removeObjectForKey:self.name];
     [_receivedBuffer release];
     [_readQueue release];
+    [_name release];
     [super dealloc];
 }
 

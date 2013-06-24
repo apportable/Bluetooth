@@ -19,6 +19,6 @@
 
 @property (nonatomic, readonly) NSString *name;
 @property (nonatomic, readonly) BluetoothConnectionManager *connection;
-@property (nonatomic, retain) NSMutableData *receivedBuffer;
-@property (nonatomic, retain) BluetoothReadQueue *readQueue;
+@property (nonatomic, readonly) NSMutableData *receivedBuffer;
+@property (nonatomic, readonly) BluetoothReadQueue *readQueue;
 @end

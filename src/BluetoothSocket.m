@@ -10,8 +10,8 @@
     if ((self = [super init]) ) {
         _name = name;
         _connection = connection;
-        self.readQueue = [[BluetoothReadQueue alloc] init];
-        self.receivedBuffer = [[NSMutableData alloc] init];
+        _readQueue = [[BluetoothReadQueue alloc] init];
+        _receivedBuffer = [[NSMutableData alloc] init];
         [[_connection socketMap] setObject:self forKey:name];
     }
 
@@ -29,11 +29,11 @@
 
 - (void)writeData:(NSData *)data withTimeout:(NSTimeInterval)timeout tag:(long)tag
 {
-    NSLog(@"packet is %@ device is %@", data, self.name);
+//    NSLog(@"packet is %@ device is %@", data, self.name);
     NSMutableData *dataWithTag = [NSMutableData dataWithBytes:&tag length:sizeof(long)];
     [dataWithTag appendData:data];
     NSString *message = [GSMimeDocument encodeBase64ToString:dataWithTag];
-    NSLog(@"%p message is %@ clientDevice is %@", self, message, self.name);
+//    NSLog(@"%p message is %@ clientDevice is %@", self, message, self.name);
     [_connection sendDeviceMessage:self withMessage:message withTag:tag];
 }
 
@@ -42,14 +42,11 @@
 // TODO timeout and input tag
 {
     int needed = length;
-    DEBUG_LOG("length is %d", length);
     if ([_receivedBuffer length] < needed) {
         @synchronized(self) {
             [_readQueue enqueue:needed withTimeout:timeout tag:tag];
         }
-        DEBUG_LOG("xyzzy socket.enqueue %d", needed);
     } else {
-        DEBUG_LOG("direct returnRead call");
         [_connection returnRead:length fromSocket:self tag:tag];
     }
 }

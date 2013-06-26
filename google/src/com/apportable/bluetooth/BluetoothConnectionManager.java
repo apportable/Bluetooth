@@ -146,6 +146,26 @@ public class BluetoothConnectionManager {
         }
     	didPublish();
     }
+    
+    private void loopDiscovery() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                	if (!myBt.isDiscovering())
+                		myBt.startDiscovery();
+                    try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						Log.e(TAG, "Exception in sleep in loopDiscovery");
+					}
+                    if (mConnectedToServer || mConnection == null) {
+                    	break;
+                    }
+                }
+            }
+        }).start();    	
+    }
 
     private OnConnectionServiceReadyListener serviceReadyListener = new OnConnectionServiceReadyListener() {
         public void OnConnectionServiceReady() {
@@ -158,7 +178,7 @@ public class BluetoothConnectionManager {
             	IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             	mContext.registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
             	mRegistered = true;
-                myBt.startDiscovery();
+                loopDiscovery();
             }
         }
     };

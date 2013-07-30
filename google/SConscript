@@ -24,4 +24,4 @@ paths = [
 ]
 
 Import('env')
-env.BuildJava(sources, paths, deps, libs=libs, output=True, aidl_sources=aidl_sources)
+env.BuildJava("bluetooth/google", sources, paths, deps, libs=libs, output=True, aidl_sources=aidl_sources)

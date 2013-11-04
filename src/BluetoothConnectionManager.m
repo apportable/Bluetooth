@@ -169,9 +169,8 @@
     }
 }
 
-- (void)connectionReceived:(JavaObject *)msg
+- (void)connectionReceived:(NSString *)clientDevice
 {
-    NSString *clientDevice = [NSString stringWithJavaString:(jstring)msg->_object];
     dispatch_async(dispatch_get_main_queue(), ^{
         if (self.socketMap == nil) // create dictionary on first connection
         {
@@ -205,10 +204,8 @@
     });
 }
 
-- (void)didConnectToServer:(JavaObject *)msg
+- (void)didConnectToServer:(NSString *)serverDevice
 {
-    NSString *serverDevice = [NSString stringWithJavaString:(jstring)msg->_object];
-
     dispatch_async(dispatch_get_main_queue(), ^{
         self.socketMap = [[NSMutableDictionary alloc] init];
         if ([self.delegate respondsToSelector:@selector(didConnectToServer:)])
@@ -247,10 +244,8 @@
     }
 }
 
-- (void)didReceive:(JavaObject *)msg fromDevice:(JavaObject *)dev
+- (void)didReceive:(NSString *)message fromDevice:(NSString *)device
 {
-    NSString *message = [NSString stringWithJavaString:(jstring)msg->_object];
-    NSString *device = [NSString stringWithJavaString:(jstring)dev->_object];
     dispatch_async(dispatch_get_main_queue(), ^{
         BluetoothSocket *socket = [self.socketMap valueForKey:device];
         NSMutableData *rawData = [[GSMimeDocument decodeBase64FromString:message multipleChunks:YES] mutableCopy];
@@ -265,9 +260,8 @@
 }
 
 
-- (void)didDisconnect:(JavaObject *)msg
+- (void)didDisconnect:(NSString *)device
 {
-    NSString *device = [NSString stringWithJavaString:(jstring)msg->_object];
     BluetoothSocket *socket = [self.socketMap valueForKey:device];
     [self.socketMap release];
     self.socketMap = nil;
@@ -299,5 +293,3 @@
 }
 
 @end
-
-

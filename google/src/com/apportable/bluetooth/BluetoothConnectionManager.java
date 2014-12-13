@@ -44,6 +44,8 @@ public class BluetoothConnectionManager {
     
     private String mName;
 
+    private String mOriginalName;
+
     private Connection mConnection;
 
     private BluetoothAdapter myBt;
@@ -136,9 +138,11 @@ public class BluetoothConnectionManager {
     
     private void doPublish() {
         String name = myBt.getName();
+        if (mOriginalName == null) {
+            mOriginalName = name;
+        }
         if (!name.endsWith(mName)) {
             myBt.setName(name + "-" + mName);
-            name = myBt.getName();
         }
         synchronized(self) {
 	        mConnection.startServer(4, connectedListener, maxConnectionsListener,
@@ -195,7 +199,12 @@ public class BluetoothConnectionManager {
     }
     
     public void stopPublishing() {
-    	mConnection.stopServer();
+        if ((myBt != null) && (mOriginalName != null)) {
+            myBt.setName(mOriginalName);
+        }
+        if (mConnection != null) {
+            mConnection.stopServer();
+        }
     }
     
     private void startSearching() { 

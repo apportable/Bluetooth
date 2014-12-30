@@ -114,22 +114,30 @@ public class BluetoothConnectionManager {
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                // Add the name and address to an array adapter to show in a ListView
+                if (device == null) {
+                    Log.d(TAG, "OOPS, bluetooth device was null from intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)");
+                    return;
+                }
                 String name = device.getName();
-//                Log.d(TAG, "found " + name + "---" + device.getAddress() + " mName is " + mName);
+                String address = device.getAddress();
+                if (name == null || address == null) {
+                    Log.d(TAG, "OOPS, ignoring bluetooth device with null name or address");
+                    return;
+                }
                 if (name.endsWith(mName)) {
                     myBt.cancelDiscovery(); // Cancel BT discovery explicitly so that connections can go through
                     int connectionStatus;
                     synchronized(self) {
-	                    connectionStatus = mConnection.connect(device.getAddress(), dataReceivedListener, disconnectedListener);
+	                    connectionStatus = mConnection.connect(address, dataReceivedListener, disconnectedListener);
                     }
                     if (connectionStatus != Connection.SUCCESS) {
                         Log.d(TAG, "Unable to connect; please try again.");
                     } else {
                     	// Successful client connection to server
                     	mConnectedToServer = true;
-                    	didConnectToServer(device.getAddress());
-                    	mConnectedServer = device.getAddress();
+                        didConnectToServer(address);
+                        mConnectedServer = address;
+                        Log.d(TAG, "Connection successful");
                     }
                 }
             }

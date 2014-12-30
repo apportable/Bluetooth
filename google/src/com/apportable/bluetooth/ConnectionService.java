@@ -127,12 +127,18 @@ public class ConnectionService extends Service {
             }
             // Getting out of the while loop means the connection is dead.
             try {
-                BluetoothSocket myBsock = mBtSockets.get(address);
-                myBsock.close();
-                mBtDeviceAddresses.remove(address);
-                mBtSockets.remove(address);
-                mBtStreamWatcherThreads.remove(address);
-                mCallback.connectionLost(address);
+                synchronized(ConnectionService.this) {
+                    BluetoothSocket myBsock = mBtSockets.get(address);
+                    if (myBsock != null) {
+                        myBsock.close();
+                    }
+                    mBtDeviceAddresses.remove(address);
+                    mBtSockets.remove(address);
+                    mBtStreamWatcherThreads.remove(address);
+                    if (mCallback != null) {
+                        mCallback.connectionLost(address);
+                    }
+                }
             } catch (NullPointerException e) {
                 Log.e(TAG, "NullPointerException in BtStreamWatcher while disconnecting", e);
             } catch (RemoteException e) {
@@ -328,14 +334,16 @@ public class ConnectionService extends Service {
 
         public void shutdown(String srcApp) throws RemoteException {
             try {
-                for (int i = 0; i < mBtDeviceAddresses.size(); i++) {
-                    BluetoothSocket myBsock = mBtSockets.get(mBtDeviceAddresses.get(i));
-                    myBsock.close();
+                synchronized(ConnectionService.this) {
+                    for (int i = 0; i < mBtDeviceAddresses.size(); i++) {
+                        BluetoothSocket myBsock = mBtSockets.get(mBtDeviceAddresses.get(i));
+                        myBsock.close();
+                    }
+                    mBtSockets = new HashMap<String, BluetoothSocket>();
+                    mBtStreamWatcherThreads = new HashMap<String, Thread>();
+                    mBtDeviceAddresses = new ArrayList<String>();
+                    mApp = "";
                 }
-                mBtSockets = new HashMap<String, BluetoothSocket>();
-                mBtStreamWatcherThreads = new HashMap<String, Thread>();
-                mBtDeviceAddresses = new ArrayList<String>();
-                mApp = "";
             } catch (IOException e) {
                 Log.i(TAG, "IOException in shutdown", e);
             }

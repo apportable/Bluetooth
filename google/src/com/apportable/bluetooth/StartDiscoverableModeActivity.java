@@ -48,38 +48,14 @@ public class StartDiscoverableModeActivity extends Activity {
             // Activity result codes.
             // Instead, the result code is the duration (seconds) of
             // discoverability or a negative number if the user answered "NO".
-            if (resultCode < 0) {
-                showWarning();
+            if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(this, "Discoverable mode NOT enabled.", 1).show();
+            } else if (resultCode < 0) {
+                Toast.makeText(this, "Discoverable mode NOT enabled: " + resultCode, 1).show();
             } else {
                 Toast.makeText(this, "Discoverable mode enabled.", 1).show();
-                finish();
             }
+            finish();
         }
     }
-
-    private void showWarning() {
-        Builder warningDialog = new Builder(this);
-        final Activity self = this;
-
-        warningDialog.setTitle("Paul fix me DISCOVERABLE_MODE_NOT_ENABLED");
-        warningDialog.setMessage("Paul fix me R.string.WARNING_MESSAGE");
-
-        warningDialog.setPositiveButton("Yes", new OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Intent i = new Intent();
-                i.setAction(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                startActivityForResult(i, REQUEST_DISCOVERABLE_CODE);
-            }
-        });
-
-        warningDialog.setNegativeButton("No", new OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Toast.makeText(self, "Discoverable mode NOT enabled.", 1).show();
-                finish();
-            }
-        });
-        warningDialog.setCancelable(false);
-        warningDialog.show();
-    }
-
 }

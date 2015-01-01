@@ -220,6 +220,11 @@
     NSData *readBuffer;
     @synchronized(socket.receivedBuffer) {
         unsigned char *bytes = (unsigned char *)[socket.receivedBuffer bytes];
+        if (!bytes)
+        {
+            DEBUG_LOG("OOPS, NULL bytes from BluetoothSocket");
+            return;
+        }
         long readTag = *(int *)bytes;
         NSRange range = NSMakeRange(0, TAG_LENGTH);
         if (readTag == requestedTag) {

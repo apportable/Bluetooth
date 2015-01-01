@@ -41,7 +41,9 @@
 
 - (void)enqueue:(NSUInteger)length withTimeout:(NSTimeInterval)timeout tag:(long)tag
 {
-    [backingArray addObject:[[QueueObject alloc] init:length withTimeout:timeout tag:tag]];
+    QueueObject *qobj = [[QueueObject alloc] init:length withTimeout:timeout tag:tag];
+    [backingArray addObject:qobj];
+    [qobj release];
 }
 
 - (NSUInteger)nextLength
